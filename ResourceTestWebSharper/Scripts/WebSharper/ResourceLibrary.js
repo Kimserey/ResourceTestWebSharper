@@ -1,13 +1,13 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,UI,Next,Doc,AttrProxy,ResourceLibrary,Client;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,UI,Next,Doc,AttrProxy;
  Runtime.Define(Global,{
   ResourceLibrary:{
    Client:{
-    page:Runtime.Field(function()
+    page:function()
     {
      return Doc.Concat([Doc.Element("div",[AttrProxy.Create("class","library-style")],[Doc.TextNode("Hello from library")])]);
-    })
+    }
    }
   }
  });
@@ -16,13 +16,10 @@
   UI=Runtime.Safe(Global.WebSharper.UI);
   Next=Runtime.Safe(UI.Next);
   Doc=Runtime.Safe(Next.Doc);
-  AttrProxy=Runtime.Safe(Next.AttrProxy);
-  ResourceLibrary=Runtime.Safe(Global.ResourceLibrary);
-  return Client=Runtime.Safe(ResourceLibrary.Client);
+  return AttrProxy=Runtime.Safe(Next.AttrProxy);
  });
  Runtime.OnLoad(function()
  {
-  Client.page();
   return;
  });
 }());

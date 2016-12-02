@@ -20,5 +20,5 @@ module Resources =
 module Client =
     
     [<Require(typeof<Style>)>]
-    let page =
+    let page() =
         LibaryTemplate.Doc("Hello from library")

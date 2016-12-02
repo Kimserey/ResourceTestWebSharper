@@ -11,8 +11,9 @@ type MainTemplate = Templating.Template<"Main.html">
 
 [<JavaScript>]
 module Client =
+
     let main () =
-        ResourceLibrary.Client.page
+        ResourceLibrary.Client.page()
 
 module Root =
     open global.Owin
@@ -22,7 +23,7 @@ module Root =
     open WebSharper.Owin
 
     let site =
-        Application.SinglePage(fun _ -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.main() @> ])))
+        Application.SinglePage(fun _ -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.main() @> ]))) 
 
     [<EntryPoint>]
     let main args =

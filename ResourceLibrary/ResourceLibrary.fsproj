@@ -58,7 +58,7 @@
     <Compile Include="Main.fs" />
     <Content Include="packages.config" />
     <None Include="library-template.html" />
-    <Content Include="library-style.css" />
+    <EmbeddedResource Include="library-style.css" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
