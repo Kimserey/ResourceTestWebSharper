@@ -36,7 +36,6 @@
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Remoting.fs" />
     <Compile Include="Client.fs" />
     <Compile Include="Main.fs" />
     <Content Include="Main.html" />
@@ -174,6 +173,13 @@
       <HintPath>..\packages\WebSharper.3.6.18.241\lib\net40\WebSharper.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ResourceLibrary\ResourceLibrary.fsproj">
+      <Name>ResourceLibrary</Name>
+      <Project>{05e9e4db-7dc8-4895-860d-1878488bc343}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- F# targets -->
   <Choose>
