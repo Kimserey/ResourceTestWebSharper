@@ -7,6 +7,10 @@
     page:function()
     {
      return Doc.Concat([Doc.Element("div",[AttrProxy.Create("class","library-style")],[Doc.TextNode("Hello from library")])]);
+    },
+    pageWithAnotherStyle:function()
+    {
+     return Doc.Concat([Doc.Element("div",[AttrProxy.Create("class","another-style")],[Doc.TextNode("Hello from library")])]);
     }
    }
   }

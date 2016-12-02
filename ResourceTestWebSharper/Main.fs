@@ -9,12 +9,6 @@ open WebSharper.UI.Next.Server
 
 type MainTemplate = Templating.Template<"Main.html">
 
-[<JavaScript>]
-module Client =
-
-    let main () =
-        ResourceLibrary.Client.page()
-
 module Root =
     open global.Owin
     open Microsoft.Owin.Hosting
@@ -23,7 +17,10 @@ module Root =
     open WebSharper.Owin
 
     let site =
-        Application.SinglePage(fun _ -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.main() @> ]))) 
+        Application.MultiPage(fun ctx endpoint -> 
+            match endpoint with
+            | "1" -> Content.Page(MainTemplate.Doc("Test", [ client <@ ResourceLibrary.Client.pageWithAnotherStyle() @> ]))
+            | _  -> Content.Page(MainTemplate.Doc("Test", [ client <@ ResourceLibrary.Client.page() @> ]))) 
 
     [<EntryPoint>]
     let main args =
