@@ -26,11 +26,19 @@ module Root =
     open Microsoft.Owin.FileSystems
     open WebSharper.Owin
 
+    [<Rpc>]
+    let get() =
+        async { 
+            return "Hello world" 
+        }
+
     [<JavaScript>]
     module Client =
         
         let page =
-            divAttr [ attr.``class`` "box" ] [ text "Hello world"]
+            divAttr 
+                [ attr.``class`` "box" ] 
+                [ text "Hello world"]
 
     let site =
         Application.MultiPage(fun ctx endpoint -> 
