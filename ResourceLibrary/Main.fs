@@ -5,6 +5,7 @@ open WebSharper.UI.Next
 open WebSharper.UI.Next.Client
 open WebSharper.UI.Next.Html
 open WebSharper.Resources
+open LibraryWithTemplate
 
 type LibaryTemplate = Templating.Template<"library-template.html"> 
 type LibaryAnotherTemplate = Templating.Template<"library-another-template.html"> 
@@ -25,7 +26,11 @@ module Client =
     
     [<Require(typeof<Style>)>]
     let page() =
-        LibaryTemplate.Doc("Hello from library")
+        div 
+            [
+                LibaryTemplate.Doc("Hello from library")
+                LibraryWithTemplate.Test.main()
+            ]
         
     [<Require(typeof<AnotherStyle>)>]
     let pageWithAnotherStyle() =

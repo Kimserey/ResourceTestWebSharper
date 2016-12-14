@@ -4,7 +4,7 @@
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{05e9e4db-7dc8-4895-860d-1878488bc343}</ProjectGuid>
+    <ProjectGuid>{9de69b3d-932e-4f90-bd8c-181b074fe2b8}</ProjectGuid>
     <WebSharperProject>Library</WebSharperProject>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <NuGetPackageImportStamp>
@@ -27,9 +27,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <Name>ResourceLibrary</Name>
-    <RootNamespace>ResourceLibrary</RootNamespace>
-    <AssemblyName>ResourceLibrary</AssemblyName>
+    <Name>LibraryWithTemplate</Name>
+    <RootNamespace>LibraryWithTemplate</RootNamespace>
+    <AssemblyName>LibraryWithTemplate</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
@@ -57,10 +57,7 @@
   <ItemGroup>
     <Compile Include="Main.fs" />
     <Content Include="packages.config" />
-    <None Include="library-another-template.html" />
-    <EmbeddedResource Include="library-style.css" />
-    <EmbeddedResource Include="library-another-style.css" />
-    <None Include="library-template.html" />
+    <None Include="template.html" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -122,12 +119,5 @@
       <HintPath>..\packages\WebSharper.3.6.18.241\lib\net40\WebSharper.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\LibraryWithTemplate\LibraryWithTemplate.fsproj">
-      <Name>LibraryWithTemplate</Name>
-      <Project>{9de69b3d-932e-4f90-bd8c-181b074fe2b8}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
 </Project>

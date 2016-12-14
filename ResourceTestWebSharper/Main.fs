@@ -6,6 +6,16 @@ open WebSharper.Sitelets
 open WebSharper.UI.Next
 open WebSharper.UI.Next.Html
 open WebSharper.UI.Next.Server
+open WebSharper.Resources
+
+module ResourceTest =
+    
+    type TestCss() =
+        inherit BaseResource("test.css")
+
+    [<assembly: System.Web.UI.WebResource("test.css", "html/css");
+      assembly: Require(typeof<TestCss>)>]
+    do()
 
 type MainTemplate = Templating.Template<"Main.html">
 
@@ -16,11 +26,17 @@ module Root =
     open Microsoft.Owin.FileSystems
     open WebSharper.Owin
 
+    [<JavaScript>]
+    module Client =
+        
+        let page =
+            divAttr [ attr.``class`` "box" ] [ text "Hello world"]
+
     let site =
         Application.MultiPage(fun ctx endpoint -> 
             match endpoint with
-            | "1" -> Content.Page(MainTemplate.Doc("Test", [ client <@ ResourceLibrary.Client.pageWithAnotherStyle() @> ]))
-            | _  -> Content.Page(MainTemplate.Doc("Test", [ client <@ ResourceLibrary.Client.page() @> ]))) 
+            | "1" -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page @> ]))
+            | _  -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page @> ]))) 
 
     [<EntryPoint>]
     let main args =
