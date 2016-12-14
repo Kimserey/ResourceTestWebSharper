@@ -21,30 +21,40 @@ type MainTemplate = Templating.Template<"Main.html">
 
 module Root =
     open global.Owin
+    open Microsoft.Owin
     open Microsoft.Owin.Hosting
     open Microsoft.Owin.StaticFiles
     open Microsoft.Owin.FileSystems
     open WebSharper.Owin
+    open WebSharper.Web
 
     [<Rpc>]
     let get() =
+        let ctx = Remoting.GetContext()
+        let owinCtx = unbox<OwinContext> <| ctx.Environment.Item("OwinContext")
+        
         async { 
             return "Hello world" 
         }
 
     [<JavaScript>]
     module Client =
-        
-        let page =
+        open WebSharper.JavaScript
+        open WebSharper.UI.Next.Client
+
+        let onClick() =
+            async {
+                let! text = get()
+                Console.Log text
+            } |> Async.StartImmediate
+
+        let page() =
             divAttr 
                 [ attr.``class`` "box" ] 
-                [ text "Hello world"]
+                [ text "Hello world"
+                  div [ Doc.Button "Rpc" [] onClick ] ]
 
-    let site =
-        Application.MultiPage(fun ctx endpoint -> 
-            match endpoint with
-            | "1" -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page @> ]))
-            | _  -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page @> ]))) 
+    let sitelet = Application.SinglePage(fun ctx -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page() @> ])))
 
     [<EntryPoint>]
     let main args =
@@ -55,12 +65,17 @@ module Root =
             | [| |] -> "..", "http://localhost:9000/"
             | _ -> eprintfn "Usage: ResourceTestWebSharper ROOT_DIRECTORY URL"; exit 1
 
-        use server = WebApp.Start(url, fun appB ->
-            appB.UseStaticFiles(
-                    StaticFileOptions(
-                        FileSystem = PhysicalFileSystem(rootDirectory)))
-                .UseSitelet(rootDirectory, site)
-            |> ignore)
+        let startup (app: IAppBuilder) =
+            let opt = WebSharperOptions<_>()
+            opt.ServerRootDirectory <- rootDirectory
+            opt.Debug <- true
+                
+            app.UseWebSharper(opt.WithSitelet(sitelet))
+               .UseStaticFiles(StaticFileOptions(FileSystem = PhysicalFileSystem(rootDirectory)))
+            |> ignore
+
+        use server = WebApp.Start(url, startup)
+
         stdout.WriteLine("Serving {0}", url)
         stdin.ReadLine() |> ignore
         0
