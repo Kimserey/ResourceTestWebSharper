@@ -36,11 +36,14 @@
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="resources/css/test.css" />
+    <EmbeddedResource Include="resources\css\test-embeddedres.css" />
     <Compile Include="Main.fs" />
     <Content Include="Main.html" />
     <Content Include="App.config" />
     <Content Include="packages.config" />
+    <Content Include="resources\css\test-content.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Target Name="IncludeContent" BeforeTargets="Compile">
     <ItemGroup>

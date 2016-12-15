@@ -58,9 +58,12 @@ type JwtPayload =
 module ResourceTest =
     
     type TestCss() =
-        inherit BaseResource("test.css")
+        inherit BaseResource("test-embeddedres.css")
 
-    [<assembly: System.Web.UI.WebResource("test.css", "html/css");
+    type TestContentCss() =
+        inherit BaseResource("css/test-content.css")
+
+    [<assembly: System.Web.UI.WebResource("test-embeddedres.css", "html/css");
       assembly: Require(typeof<TestCss>)>]
     do()
 
@@ -241,6 +244,7 @@ module WebSite =
                     ()     
             } |> Async.StartImmediate             
 
+        [<Require(typeof<ResourceTest.TestContentCss>)>]
         let page() =
             Remoting.installBearer()
 
@@ -258,8 +262,19 @@ module WebSite =
     let sitelet = 
         Application.MultiPage(fun ctx endpoint -> 
             match endpoint with
-            | "something" -> Content.Json "hello world"
-            | _ -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page() @> ])))
+            | "something" -> 
+                Content.Json "hello world"
+            
+            | _ -> 
+                Content.Page(
+                    MainTemplate.Doc(
+                        "Test", 
+                        [ 
+                            client <@ Client.page() @> 
+                        ]
+                    )
+                )
+            )
 
 
 module EntryPoint =
@@ -291,6 +306,7 @@ module EntryPoint =
                 
             app.UseWebSharper(opt.WithSitelet(WebSite.sitelet))
                .UseStaticFiles(StaticFileOptions(FileSystem = PhysicalFileSystem(rootDirectory)))
+               .UseStaticFiles(StaticFileOptions(FileSystem = PhysicalFileSystem("resources")))
             |> ignore
 
         use server = WebApp.Start(url, startup)
