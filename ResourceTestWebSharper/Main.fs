@@ -19,20 +19,6 @@ open WebSharper.Owin
 open WebSharper.Web
 open Newtonsoft.Json
 
-type JwtPayload =
-    {
-        [<JsonProperty "iss">]
-        Issuer: string
-        [<JsonProperty "sub">]
-        Subject: string
-        [<JsonProperty "exp">]
-        Expiry: DateTime
-        [<JsonProperty "iat">]
-        IssuedAtTime: DateTime
-        [<JsonProperty "jti">]
-        Id: string
-    }
-
 type UserIdentity = 
     {
         Name: string
@@ -53,6 +39,22 @@ type UserPrincipal =
             member self.Identity with get() = self.Identity :> IIdentity 
             member self.IsInRole role = self.Claims |> List.exists ((=) role)
 
+type JwtPayload =
+    {
+        [<JsonProperty "principal">]
+        Principal: UserPrincipal
+        [<JsonProperty "iss">]
+        Issuer: string
+        [<JsonProperty "sub">]
+        Subject: string
+        [<JsonProperty "exp">]
+        Expiry: DateTime
+        [<JsonProperty "iat">]
+        IssuedAtTime: DateTime
+        [<JsonProperty "jti">]
+        Id: string
+    }
+
 module ResourceTest =
     
     type TestCss() =
@@ -65,6 +67,9 @@ module ResourceTest =
 type MainTemplate = Templating.Template<"Main.html">
 
 module JwtToken =
+
+    // TODO authenticate and generate Principal then jsn payload
+
     let generate key (subject: string) (expiry: DateTime) =
         let payload = 
             {
@@ -73,6 +78,7 @@ module JwtToken =
                 Expiry = expiry
                 IssuedAtTime = DateTime.UtcNow
                 Id = Guid.NewGuid().ToString("N")
+                Principal = Unchecked.defaultof<UserPrincipal>
             }
         Jose.JWT.Encode(JsonConvert.SerializeObject(payload), Convert.FromBase64String(key), Jose.JwsAlgorithm.HS256);
 
@@ -104,14 +110,7 @@ module Authentication =
                 if payload.Expiry > DateTime.UtcNow then
                     Task.FromResult(null)
                 else
-                    let identity = 
-                        { 
-                            Name = payload.Subject
-                            IsAuthenticated = true
-                            AuthenticationType = self.Options.AuthenticationType 
-                        }
-
-                    Task.FromResult(new AuthenticationTicket(new ClaimsIdentity(identity, [ Claim("iss", payload.Issuer) ]), new AuthenticationProperties()))
+                    Task.FromResult(new AuthenticationTicket(new ClaimsIdentity(payload.Principal.Identity, payload.Principal.Claims |> List.map (fun claim -> Claim(ClaimTypes.Role, claim))), new AuthenticationProperties()))
             | _ -> 
                 Task.FromResult(null)
 
