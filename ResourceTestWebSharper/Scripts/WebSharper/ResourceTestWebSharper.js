@@ -1,10 +1,50 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,Concurrency,Remoting,AjaxRemotingProvider,UI,Next,Var,Doc,List,AttrProxy,ResourceTestWebSharper,Root,Client,Var1,T;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,ResourceTestWebSharper,WebSite,Client,Remoting,CustomXhrProvider,Remoting1,Concurrency,AjaxRemotingProvider,UI,Next,Var,Doc,List,AttrProxy,Var1,T;
  Runtime.Define(Global,{
   ResourceTestWebSharper:{
-   Root:{
+   WebSite:{
     Client:{
+     Remoting:{
+      CustomXhrProvider:Runtime.Class({
+       AddHeaders:function(headers)
+       {
+        headers.Authorization="Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjb20ua2ltc2VyZXkiLCJzdWIiOiJzb21lX3VzZXIiLCJleHAiOiIyMDE2LTEyLTE0VDIzOjUzOjQxLjA0NTA3OThaIiwiaWF0IjoiMjAxNi0xMi0xNFQyMzo1MTo0MS4wNDUwNzk4WiIsImp0aSI6IjJmMDhlZTAxMDgwNjQ5NzdhMjE5Yjk0NmNiNWU0YWJkIn0.UsRwXaqKrnIENQFw6jp78P79u1R-caGg-NnldvoK0I0";
+        return headers;
+       },
+       Async:function(url,headers,data,ok,err)
+       {
+        var arg10;
+        arg10=this.AddHeaders(headers);
+        return Remoting.originalProvider().Async(url,arg10,data,ok,err);
+       },
+       Sync:function(url,headers,data)
+       {
+        var arg10;
+        arg10=this.AddHeaders(headers);
+        return Remoting.originalProvider().Sync(url,arg10,data);
+       }
+      },{
+       New:function()
+       {
+        return Runtime.New(this,{});
+       }
+      }),
+      installBearer:function()
+      {
+       var _;
+       _=CustomXhrProvider.New();
+       Remoting1.AjaxProvider=function()
+       {
+        return _;
+       };
+       return;
+      },
+      originalProvider:Runtime.Field(function()
+      {
+       return Remoting1.AjaxProvider();
+      })
+     },
      onClick:function(callback)
      {
       var arg00;
@@ -23,6 +63,7 @@
      page:function()
      {
       var token,arg20,arg201,arg202;
+      Remoting.installBearer();
       token=Var.Create("");
       arg20=List.ofArray([Doc.TextView(token.get_View())]);
       arg202=function()
@@ -43,23 +84,26 @@
  });
  Runtime.OnInit(function()
  {
+  ResourceTestWebSharper=Runtime.Safe(Global.ResourceTestWebSharper);
+  WebSite=Runtime.Safe(ResourceTestWebSharper.WebSite);
+  Client=Runtime.Safe(WebSite.Client);
+  Remoting=Runtime.Safe(Client.Remoting);
+  CustomXhrProvider=Runtime.Safe(Remoting.CustomXhrProvider);
+  Remoting1=Runtime.Safe(Global.WebSharper.Remoting);
   Concurrency=Runtime.Safe(Global.WebSharper.Concurrency);
-  Remoting=Runtime.Safe(Global.WebSharper.Remoting);
-  AjaxRemotingProvider=Runtime.Safe(Remoting.AjaxRemotingProvider);
+  AjaxRemotingProvider=Runtime.Safe(Remoting1.AjaxRemotingProvider);
   UI=Runtime.Safe(Global.WebSharper.UI);
   Next=Runtime.Safe(UI.Next);
   Var=Runtime.Safe(Next.Var);
   Doc=Runtime.Safe(Next.Doc);
   List=Runtime.Safe(Global.WebSharper.List);
   AttrProxy=Runtime.Safe(Next.AttrProxy);
-  ResourceTestWebSharper=Runtime.Safe(Global.ResourceTestWebSharper);
-  Root=Runtime.Safe(ResourceTestWebSharper.Root);
-  Client=Runtime.Safe(Root.Client);
   Var1=Runtime.Safe(Next.Var1);
   return T=Runtime.Safe(List.T);
  });
  Runtime.OnLoad(function()
  {
+  Remoting.originalProvider();
   return;
  });
 }());
