@@ -114,6 +114,17 @@ module Authentication =
             | _ -> 
                 Task.FromResult(null)
 
+        // Decides whether to invoke or not the middleware.
+        // If true, stop further processing.
+        // If false, pass through to next middleware.
+        override self.InvokeAsync() =
+            match self.Request.Path.ToString() with
+            | "token" -> 
+                // generate token
+                Task.FromResult(true)
+            | _ -> Task.FromResult(false)
+            
+
     type JwtMiddleware(next, options) =
         inherit AuthenticationMiddleware<JwtMiddlewareOptions>(next, options)
 
@@ -145,9 +156,9 @@ module WebSite =
     [<JavaScript>]
     module private Client =
         open WebSharper.JavaScript
+        open WebSharper.JQuery
         open WebSharper.UI.Next.Client
-        
-        [<AutoOpen>]
+            
         module private Remoting =
             open WebSharper.JavaScript
 
@@ -167,6 +178,52 @@ module WebSite =
             let installBearer() =
                 WebSharper.Remoting.AjaxProvider <- CustomXhrProvider()
 
+        module private AjaxHelper =
+
+            type AjaxResult =
+            | Success of result: obj
+            | Error of errorMessage: string
+
+            type AjaxOptions = {
+                Url:         string
+                RequestType: RequestType
+                Headers:     (string * string) [] option
+                Data:        string option
+                ContentType: string option
+            } 
+            with 
+                static member GET =
+                    { RequestType = RequestType.GET;   Url = ""; Headers = None; Data = None; ContentType = None }
+        
+                static member POST =
+                    { AjaxOptions.GET with RequestType = RequestType.POST }
+    
+            let httpRequest options =
+                async {
+                    try
+                        let! result = 
+                            Async.FromContinuations
+                            <| fun (ok, ko, _) ->
+                                let settings = JQuery.AjaxSettings(
+                                                Url = options.Url,
+                                                Type = options.RequestType,
+                                                DataType = JQuery.DataType.Json,
+                                                Success = (fun (result, _, _) ->
+                                                            ok result),
+                                                Error = (fun (jqXHR, _, _) ->
+                                                            ko (System.Exception(string jqXHR.Status)))
+                                                )
+                                options.ContentType |> Option.iter (fun c -> settings.ContentType <- c)
+                                options.Headers     |> Option.iter (fun h -> settings.Headers <- (new Object<string>(h)))
+                                options.Data        |> Option.iter (fun d -> settings.Data <- d)
+                                JQuery.Ajax(settings) |> ignore
+                        return AjaxResult.Success result
+                    with ex -> 
+                        Console.Log <| ex.JS.ToString()
+                        return AjaxResult.Error ex.Message
+                }
+        
+        open AjaxHelper
 
         let onClick (callback: string -> unit) =
             async {
@@ -174,18 +231,35 @@ module WebSite =
                 callback text
             } |> Async.StartImmediate
 
+        let onAjaxClick (callback: string -> unit) =
+            async {
+                let! result = httpRequest { AjaxOptions.GET with Url = "something" }
+                match result with
+                | AjaxResult.Success res ->
+                    string res |> callback
+                | AjaxResult.Error err ->
+                    ()     
+            } |> Async.StartImmediate             
+
         let page() =
             Remoting.installBearer()
 
             let token = Var.Create ""
+            let result = Var.Create ""
 
             divAttr 
                 [ attr.``class`` "box" ] 
                 [ text "Hello world"
                   div [ Doc.TextView token.View ] 
-                  div [ Doc.Button "Rpc" [] (fun () -> onClick (Var.Set token)) ] ]
+                  div [ Doc.TextView result.View ] 
+                  div [ Doc.Button "Rpc" [] (fun () -> onClick (Var.Set token)) ]
+                  div [ Doc.Button "Ajax call" [] (fun () -> onAjaxClick (Var.Set result)) ] ]
 
-    let sitelet = Application.SinglePage(fun ctx -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page() @> ])))
+    let sitelet = 
+        Application.MultiPage(fun ctx endpoint -> 
+            match endpoint with
+            | "something" -> Content.Json "hello world"
+            | _ -> Content.Page(MainTemplate.Doc("Test", [ client <@ Client.page() @> ])))
 
 
 module EntryPoint =
